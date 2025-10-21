@@ -20,6 +20,7 @@ Puerto TCP 8501 abierto en el firewall de Windows.
 Instalación
 
 Copiar o clonar el proyecto en el servidor.
+git clone https://github.com/alejandroMgno/directorio_gnn.git
 
 Instalar las dependencias con:
 
@@ -77,6 +78,5 @@ Problemas de acceso remoto: verifica que el firewall permita el puerto 8501 y qu
 Contacto
 
 Para soporte o consultas:
-Nombre: [Tu nombre]
-Correo: [tu.email@ejemplo.com
-]
+Nombre: Jose Alejandro Rubio Mendoza
+Correo: jarubio@gasnaturalindustrial.com.mx

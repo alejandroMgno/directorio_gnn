@@ -1,82 +1,190 @@
-Sistema de Directorio con Streamlit 
+🔍 Sistema de Ubicación de Contactos de Empleados
+Aplicación profesional en Streamlit para búsqueda, localización y contacto rápido de empleados
 
-Descripción
+Este sistema permite gestionar, unificar y consultar información de empleados proveniente de tres archivos independientes:
 
-Este proyecto es un sistema de directorio desarrollado con Streamlit que permite gestionar y visualizar información organizada, como ubicaciones, usuarios, contactos u otros datos relacionados.
+Ubicación (Nombre / Puesto / Departamento)
 
-Requisitos
+Correos electrónicos
 
-Python 3.7 o superior instalado en el servidor.
+Teléfonos
 
-Streamlit instalado (pip install streamlit).
+La aplicación integra estos datos, filtra inconsistencias, evita duplicados y permite contactar de forma inmediata vía WhatsApp o Correo, todo desde una interfaz web optimizada.
 
-Dependencias adicionales, por ejemplo, para manejar archivos Excel u otros formatos (openpyxl, polars):
+🚀 Características Principales
+🔎 Búsqueda avanzada
 
-pip install openpyxl polars
+Búsqueda por nombre, departamento, puesto, o cualquier palabra relacionada.
 
+Soporta búsquedas múltiples: "JUAN PEREZ ventas gerente"
 
-Puerto TCP 8501 abierto en el firewall de Windows.
+Resultados instantáneos con selector individual.
 
-Instalación
+👤 Tarjetas de contacto
 
-Copiar o clonar el proyecto en el servidor.
-git clone https://github.com/alejandroMgno/directorio_gnn.git
+Cada empleado muestra:
 
-Instalar las dependencias con:
+Nombre
 
+Puesto
+
+Departamento
+
+Teléfono
+
+Correo
+
+Botones rápidos:
+
+📱 WhatsApp Directo (wa.me)
+
+📧 Correo (mailto:)
+
+🗂️ Gestión de archivos (modo administrador)
+
+Sección protegida con contraseña (admin2021*+) que permite:
+
+Cargar archivos de Ubicación / Correos / Teléfonos
+
+Procesar y combinar datos
+
+Limpiar caché
+
+Reset completo del sistema
+
+🔁 Carga automática
+
+Si existen archivos previos en el directorio temporal, el sistema carga los datos automáticamente al iniciar.
+
+⚙️ Aplicación estructurada con SOLID
+
+El código implementa todos los principios SOLID:
+
+SRP: Clases con responsabilidad única
+
+OCP: Procesadores extensibles
+
+LSP: Intercambio de manejadores sin romper el sistema
+
+ISP: Interfaces específicas
+
+DIP: Dependencias abstraídas y desacopladas
+
+📁 Requisitos del Sistema
+Archivos necesarios
+
+Se requieren 3 archivos, en formato Excel o CSV:
+
+Tipo	Encabezado esperado	Contenido mínimo
+Ubicación	fila 2 (header=1)	Nombre, Puesto, Departamento
+Correo	fila 1 (header=0)	Nombre, Correo
+Teléfono	fila 1 (header=0)	Nombre, Teléfono
+Libros y librerías utilizadas
+
+Python 3.x
+
+Streamlit
+
+Pandas
+
+Requests
+
+OpenPyXL
+
+urllib3
+
+🛠️ Instalación
+1️⃣ Clonar repositorio
+git clone https://github.com/tu-repositorio/sistema-contactos-empleados.git
+cd sistema-contactos-empleados
+
+2️⃣ Crear entorno virtual (opcional)
+python -m venv venv
+source venv/bin/activate  # Linux / Mac
+venv\Scripts\activate     # Windows
+
+3️⃣ Instalar dependencias
 pip install -r requirements.txt
 
-(o instalar manualmente según necesidad)
+4️⃣ Ejecutar la aplicación
+streamlit run app.py
 
-Abrir el puerto 8501 en el firewall para permitir conexiones entrantes:
+🧩 Estructura del Código
 
-netsh advfirewall firewall add rule name="Streamlit 8501" dir=in action=allow protocol=TCP localport=8501 profile=domain,private,public
+El proyecto está organizado en componentes claros, siguiendo SOLID:
 
-Uso
+EmployeeContactSystem
+│
+├── ConfigManager          # Configuración y directorios temporales
+├── UIManager              # Estilos y configuración de interfaz
+├── FileHandler            # Manejo de archivos temporales
+├── FileDataProcessor      # Procesamiento de archivos Excel/CSV
+├── ColumnCleaner          # Limpieza de encabezados
+├── Contact Providers      # Ubicación / correo / teléfono
+├── DataMerger             # Integración de datos entre proveedores
+├── Searcher               # Búsqueda avanzada
+├── PositionValidator      # Reglas para excluir directores
+└── WhatsApp/Email URL     # Generadores de enlaces de contacto
 
-Para iniciar el sistema, ejecutar:
+🧪 Validaciones y Seguridad
+✔️ Validaciones aplicadas
 
-python -m streamlit run main_app.py --server.address 0.0.0.0 --server.port 8501 --server.headless true
+Limpieza completa de nombres y columnas
 
+Filtrado de “directores” (excluye director pero no subdirector)
 
-Accede desde cualquier navegador en la red local usando la IP del servidor, por ejemplo:
+Normalización de teléfonos
 
-http://10.10.8.200:8501
+Eliminación de valores nulos / vacíos
 
-Funcionalidades principales
+Verificación de encabezados y compatibilidad entre archivos
 
-Visualización de directorios y estructuras jerárquicas.
+🔐 Seguridad
 
-Gestión de datos vía carga de archivos (por ejemplo, Excel).
+Modo administrador protegido por contraseña
 
-Filtros y búsquedas en la información.
+Directorio temporal interno
 
-Interfaz sencilla e interactiva gracias a Streamlit.
+Limpieza de archivos previa ante carga nueva
 
-Mantenimiento y recomendaciones
+🖥️ Uso del Sistema
+👨‍💼 Para los usuarios:
 
-Para mantener el sistema activo, configura su ejecución automática con un servicio Windows o tarea programada.
+Escribir nombre / puesto / departamento
 
-Protege la aplicación con controles de acceso si contiene información sensible.
+Seleccionar el empleado deseado
 
-Monitorea logs y estado del sistema regularmente.
+Usar las opciones:
 
-Solución de problemas comunes
+📱 WhatsApp
 
-Módulo Streamlit no instalado:
+📧 Correo
 
-pip install streamlit
+⚙️ Para administradores:
 
+Abrir el panel “Administrar archivos”
 
-Dependencia ‘openpyxl’ faltante para archivos Excel:
+Ingresar contraseña
 
-pip install openpyxl
+Subir los 3 archivos
 
+Presionar Actualizar Datos
 
-Problemas de acceso remoto: verifica que el firewall permita el puerto 8501 y que el servidor esté escuchando (usar netstat).
+📦 Exportar Resultados
 
-Contacto
+La aplicación permite descargar resultados filtrados en CSV para reportes externos.
 
-Para soporte o consultas:
-Nombre: Jose Alejandro Rubio Mendoza
-Correo: jarubio@gasnaturalindustrial.com.mx
+📌 Notas Importantes
+
+El sistema solo integra empleados con:
+
+Ubicación + (Correo o Teléfono)
+
+Si un nombre aparece en ubicación pero no en correo ni teléfono → se descarta
+
+El sistema se optimizó para organizaciones grandes (miles de empleados)
+
+👨‍💻 Autor
+
+Software desarrollado por GNN
+Interfaz y motor de búsqueda optimizados para uso empresarial.

@@ -96,7 +96,10 @@ urllib3
 🛠️ Instalación
 1️⃣ Clonar repositorio
 git clone https://github.com/alejandroMgno/directorio_gnn
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3952c46aabcb149393b6d16406fde65b38d09bf
 
 2️⃣ Crear entorno virtual (opcional)
 python -m venv venv

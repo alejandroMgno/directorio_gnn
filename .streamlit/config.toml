@@ -1,0 +1,23 @@
+[server]
+port = 8501
+address = "0.0.0.0"
+baseUrlPath = "/directorio"
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+serverAddress = "10.10.10.15"
+serverPort = 8501
+gatherUsageStats = false
+
+# ESTA ES LA CLAVE: Deshabilitar el onboarding
+[global]
+developmentMode = false
+showWarningOnDirectExecution = false
+
+# Configuración para evitar el prompt de email
+[logger]
+level = "error"
+
+[client]
+showErrorDetails = false

@@ -95,8 +95,8 @@ urllib3
 
 🛠️ Instalación
 1️⃣ Clonar repositorio
-git clone https://github.com/tu-repositorio/sistema-contactos-empleados.git
-cd sistema-contactos-empleados
+git clone https://github.com/alejandroMgno/directorio_gnn
+
 
 2️⃣ Crear entorno virtual (opcional)
 python -m venv venv

@@ -12,12 +12,76 @@ import os
 import tempfile
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple, Any
+import hashlib
 
 # Desactivar warnings de SSL para desarrollo
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Script de redirección automática - AL INICIO
+st.markdown("""
+<style>
+/* Esto es temporal para evitar flash de contenido */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+
+<script>
+// Función para ejecutar después de que la página cargue
+function initializeRedirect() {
+    // Redirección automática a /directorio si se accede sin él
+    const currentPath = window.location.pathname;
+    const basePath = '/directorio';
+
+    if (currentPath === '/' || !currentPath.includes(basePath)) {
+        // Construir nueva URL manteniendo parámetros
+        const newPath = basePath + (currentPath === '/' ? '' : currentPath);
+        const newUrl = window.location.origin + newPath + window.location.search + window.location.hash;
+        
+        // Solo redirigir si es necesario
+        if (window.location.href !== newUrl) {
+            window.history.replaceState(null, null, newPath);
+            console.log('Redirigido automáticamente a:', newPath);
+        }
+    }
+
+    // Interceptar clics en enlaces internos
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            const href = e.target.getAttribute('href');
+            if (href && href.startsWith('/') && !href.startsWith('/directorio/') && !href.startsWith('/static/')) {
+                e.preventDefault();
+                const newHref = '/directorio' + href;
+                window.location.href = newHref;
+            }
+        }
+    });
+}
+
+// Ejecutar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeRedirect);
+} else {
+    initializeRedirect();
+}
+</script>
+""", unsafe_allow_html=True)
+
+# Configuración de página (DEBE IR PRIMERO)
+st.set_page_config(
+    page_title="Directorio Corporativo GNI",
+    page_icon="🏢",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': "Directorio Corporativo v2.0 - Uso Interno"
+    }
+)
+
 # =============================================
-# PRINCIPIO DE RESPONSABILIDAD ÚNICA (SRP)
+# 1. CONFIGURACIÓN Y UI (VISUAL PROFESIONAL CORPORATIVO)
 # =============================================
 
 class ConfigManager:
@@ -40,274 +104,398 @@ class UIManager:
     def setup_page_config():
         """Configura la página de Streamlit"""
         st.set_page_config(
-            page_title="Sistema de Ubicación de Contactos de Empleados",
-            page_icon="",
+            page_title="Directorio Corporativo GNI",
+            page_icon="🏢",
             layout="wide",
             initial_sidebar_state="collapsed"
         )
     
     @staticmethod
     def apply_custom_styles():
-        """Aplica estilos CSS personalizados"""
+        """Aplica estilos CSS personalizados profesional corporativo"""
         st.markdown("""
             <style>
-            /* Reducir márgenes principales al mínimo */
+            /* --- VARIABLES GLOBALES --- */
+            :root {
+                --primary-color: #1a3a5f;
+                --secondary-color: #2c5282;
+                --accent-color: #2563eb;
+                --success-color: #059669;
+                --warning-color: #d97706;
+                --light-gray: #f8fafc;
+                --medium-gray: #e2e8f0;
+                --dark-gray: #475569;
+                --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                --border-radius: 8px;
+            }
+
+            /* --- CONTENEDOR PRINCIPAL --- */
             .main .block-container {
-                padding-top: 0.5rem !important;
-                padding-bottom: 0.5rem !important;
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
-                max-width: 100% !important;
-            }
-            
-            /* Botones más compactos */
-            .stButton button {
-                width: 100%;
-                margin: 0.1rem 0 !important;
-                padding: 0.25rem 0.5rem !important;
-            }
-            
-            /* Inputs más compactos */
-            .stTextInput input {
-                padding: 0.25rem 0.5rem !important;
-                margin: 0.1rem 0 !important;
-                font-size: 12px !important;
-            }
-            
-            /* Dataframes más compactos */
-            .dataframe {
-                width: 100% !important;
-                margin: 0.25rem 0 !important;
-                font-size: 1px !important;
-            }
-            
-            /* Reducir espacio entre elementos */
-            .element-container {
-                padding: 0.1rem 0 !important;
-                margin: 0.1rem 0 !important;
-            }
-            
-            /* Ajustar el ancho máximo del contenido principal */
-            .main .block-container {
-                max-width: 99vw !important;
-            }
-            
-            /* Botones de acción personalizados MEJORADOS */
-            .action-btn {
-                border: none !important;
-                padding: 12px 20px !important;
-                border-radius: 8px !important;
-                cursor: pointer !important;
-                width: 100% !important;
-                font-size: 14px !important;
-                font-weight: bold !important;
-                text-decoration: none !important;
-                display: inline-block !important;
-                text-align: center !important;
-                transition: all 0.3s ease !important;
-                margin: 0.2rem 0 !important;
-            }
-            
-            .action-btn:hover {
-                transform: translateY(-2px) !important;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-            }
-            
-            .whatsapp-btn {
-                background: linear-gradient(135deg, #25D366, #128C7E) !important;
-                color: white !important;
-            }
-            
-            .email-btn {
-                background: linear-gradient(135deg, #EA4335, #D14836) !important;
-                color: white !important;
-            }
-            
-            .disabled-btn {
-                background-color: #f0f0f0 !important;
-                color: #999 !important;
-                cursor: not-allowed !important;
-            }
-            
-            /* Mejoras para las tarjetas de contacto */
-            .contact-card {
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 1rem;
-                margin: 0.5rem 0;
-                border-left: 4px solid #007bff;
-                border: 1px solid #e0e0e0;
-            }
-            
-            /* Animaciones suaves */
-            .fade-in {
-                animation: fadeIn 0.5s ease-in;
-            }
-            
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            
-            /* Contenedor con scroll para la lista de empleados */
-            .employee-list-container {
-                max-height: 60vh;
-                overflow-y: auto;
-                border: 1px solid #e0e0e0;
-                border-radius: 10px;
-                padding: 1rem;
-                margin: 1rem 0;
-                background: #fafafa;
-            }
-            
-            /* Footer fijo */
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: black;
-                color: white;
-                text-align: center;
-                padding: 0.5rem;
-                font-size: 14px;
-                font-weight: bold;
-                z-index: 1000;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            }
-            
-            /* Espacio para el footer */
-            .main .block-container {
+                padding-top: 1rem !important;
                 padding-bottom: 3rem !important;
+                max-width: 1200px !important;
+                margin: 0 auto !important;
+            }
+
+            /* --- HEADER CORPORATIVO --- */
+            .header-container {
+                background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+                color: white;
+                padding: 2rem;
+                border-radius: var(--border-radius);
+                margin-bottom: 2rem;
+                box-shadow: var(--card-shadow);
+                border-left: 4px solid var(--accent-color);
+            }
+            .header-title {
+                font-size: 1.8rem;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: -0.5px;
+            }
+            .header-subtitle {
+                opacity: 0.9;
+                font-size: 0.95rem;
+                margin-top: 0.5rem;
+                font-weight: 400;
+            }
+
+            /* --- INPUTS DE BÚSQUEDA --- */
+            .stTextInput input {
+                border-radius: 6px !important;
+                border: 1px solid var(--medium-gray) !important;
+                padding: 10px 14px !important;
+                font-size: 14px !important;
+                transition: all 0.2s ease;
+                background-color: white;
+            }
+            .stTextInput input:focus {
+                border-color: var(--accent-color) !important;
+                box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+                color: var(--dark-gray) !important;
+            }
+
+            /* --- FILTROS DE BÚSQUEDA --- */
+            .filter-badge {
+                display: inline-block;
+                background: #e0f2fe;
+                color: #0369a1;
+                padding: 4px 12px;
+                border-radius: 16px;
+                font-size: 13px;
+                margin-right: 8px;
+                margin-bottom: 8px;
+                border: 1px solid #bae6fd;
+            }
+            
+            .filter-container {
+                background: white;
+                border: 1px solid var(--medium-gray);
+                border-radius: var(--border-radius);
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+                box-shadow: var(--card-shadow);
+            }
+
+            /* --- TARJETA DE CONTACTO DETALLADA --- */
+            .contact-card-detail {
+                background: white;
+                border-radius: var(--border-radius);
+                padding: 1.5rem;
+                box-shadow: var(--card-shadow);
+                border: 1px solid var(--medium-gray);
+                margin-bottom: 1.5rem;
+                transition: box-shadow 0.3s ease;
+            }
+            .contact-card-detail:hover {
+                box-shadow: var(--hover-shadow);
+            }
+            
+            .detail-header {
+                font-size: 1.3rem;
+                color: var(--primary-color);
+                font-weight: 600;
+                border-bottom: 1px solid var(--medium-gray);
+                padding-bottom: 1rem;
+                margin-bottom: 1.2rem;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .detail-row {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 0.8rem;
+                font-size: 14px;
+                color: var(--dark-gray);
+            }
+            .detail-label {
+                min-width: 120px;
+                font-weight: 500;
+                color: var(--primary-color);
+            }
+            .detail-value {
+                flex: 1;
+                color: #374151;
+            }
+
+            /* --- LISTA DE EMPLEADOS --- */
+            .employee-list-container {
+                background: white;
+                border-radius: var(--border-radius);
+                box-shadow: var(--card-shadow);
+                overflow: hidden;
+                border: 1px solid var(--medium-gray);
+            }
+
+            .emp-name { 
+                font-weight: 600; 
+                color: var(--primary-color); 
+                font-size: 14px; 
+            }
+            .emp-role { 
+                color: var(--dark-gray); 
+                font-size: 13px; 
+                font-weight: 400; 
+            }
+            .emp-dept { 
+                background: var(--light-gray); 
+                color: var(--primary-color); 
+                padding: 4px 10px; 
+                border-radius: 4px; 
+                font-size: 12px; 
+                font-weight: 500;
+                border: 1px solid var(--medium-gray);
+            }
+            .emp-location {
+                background: #f0f9ff;
+                color: #0369a1;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+                border: 1px solid #bae6fd;
+            }
+
+            /* --- BOTONES DE ACCIÓN --- */
+            .action-btn {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                border-radius: 6px;
+                text-align: center;
+                text-decoration: none !important;
+                font-weight: 500;
+                font-size: 13px;
+                transition: all 0.2s ease;
+                border: none;
+                cursor: pointer;
+                margin-bottom: 8px;
+            }
+            .action-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            }
+            .whatsapp-btn { 
+                background: #25D366 !important; 
+                color: white !important; 
+            }
+            .whatsapp-btn:hover { 
+                background: #128C7E !important; 
+            }
+            .email-btn { 
+                background: var(--accent-color) !important; 
+                color: white !important; 
+            }
+            .email-btn:hover { 
+                background: #1d4ed8 !important; 
+            }
+            
+            /* --- FOOTER --- */
+            .footer {
+                margin-top: 3rem;
+                padding-top: 1rem;
+                border-top: 1px solid var(--medium-gray);
+                text-align: center;
+                font-size: 12px;
+                color: var(--dark-gray);
+            }
+            
+            /* Botones de Streamlit ajustados */
+            .stButton button {
+                border-radius: 6px !important;
+                font-weight: 500 !important;
+                font-size: 14px !important;
+                border: 1px solid var(--medium-gray) !important;
+            }
+
+            /* --- BADGES --- */
+            .status-badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+                margin-right: 8px;
+            }
+            .status-online {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+            .status-offline {
+                background-color: #fee2e2;
+                color: #991b1b;
+            }
+
+            /* --- EXPANDER ESTILO CORPORATIVO --- */
+            .streamlit-expanderHeader {
+                background-color: var(--light-gray) !important;
+                border: 1px solid var(--medium-gray) !important;
+                border-radius: var(--border-radius) !important;
+                font-weight: 500 !important;
+            }
+
+            /* --- TABLAS --- */
+            .dataframe {
+                border: 1px solid var(--medium-gray) !important;
+                border-radius: var(--border-radius) !important;
+            }
+            
+            /* --- ICONOS MÁS DISCRETOS --- */
+            .detail-icon {
+                color: var(--accent-color);
+                margin-right: 10px;
+                font-size: 16px;
+            }
+            
+            /* --- SEPARADORES --- */
+            .divider {
+                height: 1px;
+                background: linear-gradient(90deg, transparent, var(--medium-gray), transparent);
+                margin: 1.5rem 0;
+            }
+            
+            /* --- PILLS DE FILTRO --- */
+            .filter-pill {
+                display: inline-flex;
+                align-items: center;
+                background: #e0f2fe;
+                color: #0369a1;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 13px;
+                margin-right: 8px;
+                margin-bottom: 8px;
+                border: 1px solid #bae6fd;
+            }
+            .filter-pill-remove {
+                margin-left: 6px;
+                cursor: pointer;
+                font-weight: bold;
             }
             </style>
         """, unsafe_allow_html=True)
     
     @staticmethod
+    def display_header():
+        """Muestra el header visual corporativo"""
+        st.markdown("""
+            <div class="header-container">
+                <div class="header-title">Directorio Corporativo GNI</div>
+                <div class="header-subtitle">Sistema Integral de Gestión de Contactos</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    @staticmethod
     def display_footer():
-        """Muestra el footer"""
-        st.markdown(
-            '<div class="footer">Software desarrollado por GNN</div>',
-            unsafe_allow_html=True
-        )
+        """Muestra el footer corporativo"""
+        st.markdown("""
+            <div class="footer">
+                <div>© 2025 Gas Natural Del Noroeste • Sistema Directorio v2.0 • Plataforma Empresarial</div>
+                <div style="font-size: 11px; margin-top: 5px; color: #94a3b8;">Confidencial - Uso Interno</div>
+            </div>
+        """, unsafe_allow_html=True)
 
 # =============================================
-# PRINCIPIO ABIERTO/CERRADO (OCP)
+# 2. LÓGICA DE NEGOCIO (SOLID)
 # =============================================
 
 class DataProcessor(ABC):
     """Interfaz base para procesadores de datos - OCP"""
-    
     @abstractmethod
     def process(self, data: Any) -> Any:
         pass
 
 class FileDataProcessor(DataProcessor):
     """Procesador para archivos Excel y CSV - OCP"""
-    
     def __init__(self, header_row: int = 0):
         self.header_row = header_row
     
     def process(self, file_input) -> Optional[pd.DataFrame]:
-        """Procesa archivos Excel y CSV desde file uploader o ruta de archivo"""
         try:
-            if file_input is None:
-                return None
+            if file_input is None: return None
             
-            # Determinar si es un file uploader de Streamlit o una ruta de archivo
-            if hasattr(file_input, 'read'):  # Es un file uploader de Streamlit
+            if hasattr(file_input, 'read'):
                 file_extension = file_input.name.split('.')[-1].lower()
                 file_content = file_input
-            else:  # Es una ruta de archivo
+            else:
                 file_extension = file_input.split('.')[-1].lower()
                 file_content = file_input
             
             if file_extension in ['xlsx', 'xls']:
-                df = pd.read_excel(
-                    file_content, 
-                    header=self.header_row, 
-                    engine='openpyxl',
-                    dtype=str
-                )
+                df = pd.read_excel(file_content, header=self.header_row, engine='openpyxl', dtype=str)
             elif file_extension == 'csv':
-                # Intentar diferentes encodings para CSV
                 encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'windows-1252']
                 df = None
                 for encoding in encodings:
                     try:
-                        if hasattr(file_content, 'seek'):
-                            file_content.seek(0)  # Reset file pointer para uploaders
+                        if hasattr(file_content, 'seek'): file_content.seek(0)
                         df = pd.read_csv(file_content, header=self.header_row, dtype=str, encoding=encoding)
                         break
-                    except (UnicodeDecodeError, Exception) as e:
-                        continue
-                if df is None:
-                    st.error("❌ No se pudo leer el archivo CSV con ningún encoding común")
-                    return None
+                    except Exception: continue
+                if df is None: return None
             else:
-                st.error(f"❌ Formato de archivo no soportado: {file_extension}")
                 return None
             
             df.columns = ColumnCleaner.clean_column_names(df.columns)
             df = df.dropna(how='all')
             return df
-            
-        except Exception as e:
-            st.error(f"❌ Error al procesar archivo: {str(e)}")
+        except Exception:
             return None
 
 class ColumnCleaner:
-    """Clase dedicada a la limpieza de columnas - SRP"""
-    
     @staticmethod
     def clean_column_names(columns) -> List[str]:
-        """Limpia nombres de columnas"""
         cleaned = []
         for col in columns:
             if pd.isna(col):
                 cleaned.append('columna_desconocida')
                 continue
-                
             col_str = str(col).strip().lower()
             col_str = re.sub(r'[^\w\s]', '', col_str)
             col_str = re.sub(r'\s+', '_', col_str)
             cleaned.append(col_str or 'columna_sin_nombre')
-        
         return cleaned
 
-# =============================================
-# PRINCIPIO DE SUSTITUCIÓN DE LISKOV (LSP)
-# =============================================
-
 class FileHandler(ABC):
-    """Interfaz base para manejo de archivos - LSP"""
-    
     @abstractmethod
-    def save(self, uploaded_file, file_type: str) -> Optional[str]:
-        pass
-    
+    def save(self, uploaded_file, file_type: str) -> Optional[str]: pass
     @abstractmethod
-    def load(self, file_type: str) -> Optional[str]:
-        pass
+    def load(self, file_type: str) -> Optional[str]: pass
 
 class TemporaryFileHandler(FileHandler):
-    """Manejador de archivos temporales - LSP"""
-    
     def __init__(self, temp_dir: str):
         self.temp_dir = temp_dir
     
     def save(self, uploaded_file, file_type: str) -> Optional[str]:
-        """Guarda archivo temporalmente"""
         if uploaded_file is not None:
-            # Limpiar archivos anteriores del mismo tipo
             for archivo in os.listdir(self.temp_dir):
                 if archivo.startswith(file_type):
-                    try:
-                        os.remove(os.path.join(self.temp_dir, archivo))
-                    except:
-                        pass
+                    try: os.remove(os.path.join(self.temp_dir, archivo))
+                    except: pass
             
-            # Guardar nuevo archivo
             file_path = os.path.join(self.temp_dir, f"{file_type}_{uploaded_file.name}")
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getvalue())
@@ -315,121 +503,151 @@ class TemporaryFileHandler(FileHandler):
         return None
     
     def load(self, file_type: str) -> Optional[str]:
-        """Carga archivo temporal"""
         for archivo in os.listdir(self.temp_dir):
             if archivo.startswith(file_type):
                 return os.path.join(self.temp_dir, archivo)
         return None
     
     def exists(self, file_types: List[str]) -> bool:
-        """Verifica si existen archivos temporales"""
         return all(self.load(tipo) is not None for tipo in file_types)
     
     def cleanup(self):
-        """Limpia archivos temporales"""
         for archivo in os.listdir(self.temp_dir):
-            try:
-                os.remove(os.path.join(self.temp_dir, archivo))
-            except:
-                pass
-
-# =============================================
-# PRINCIPIO DE SEGREGACIÓN DE INTERFACES (ISP)
-# =============================================
+            try: os.remove(os.path.join(self.temp_dir, archivo))
+            except: pass
 
 class ContactInfoProvider(ABC):
-    """Interfaz específica para proveedores de información de contacto - ISP"""
-    
     @abstractmethod
-    def get_contact_info(self, nombre: str) -> Dict[str, str]:
-        pass
+    def get_contact_info(self, nombre: str) -> Dict[str, str]: pass
 
 class URLGenerator(ABC):
-    """Interfaz específica para generadores de URLs - ISP"""
-    
     @abstractmethod
-    def generate_url(self, data: str) -> Optional[str]:
-        pass
+    def generate_url(self, data: str) -> Optional[str]: pass
 
 class WhatsAppURLGenerator(URLGenerator):
-    """Generador de URLs de WhatsApp - ISP"""
-    
     def generate_url(self, numero: str) -> Optional[str]:
-        """Genera URL de WhatsApp"""
-        if not numero or numero == '':
-            return None
-        
+        if not numero or numero == '': return None
         numero_limpio = re.sub(r'\D', '', str(numero))
-        
         if numero_limpio.startswith('52') and len(numero_limpio) == 12:
             numero_final = numero_limpio
         elif len(numero_limpio) == 10:
             numero_final = '52' + numero_limpio
         else:
             return None
-        
         return f"https://wa.me/{numero_final}"
 
 class EmailURLGenerator(URLGenerator):
-    """Generador de URLs de correo - ISP"""
-    
     def generate_url(self, correo: str) -> Optional[str]:
-        """Genera URL de correo"""
-        if not correo or correo == '':
-            return None
+        if not correo or correo == '': return None
         return f"mailto:{correo}"
 
-# =============================================
-# PRINCIPIO DE INVERSIÓN DE DEPENDENCIAS (DIP)
-# =============================================
+class LocationExtractor:
+    """Extrae ciudad y estado de una cadena de ubicación"""
+    
+    @staticmethod
+    def extract_location(ubicacion_str: str) -> Tuple[str, str]:
+        """Extrae ciudad y estado de una cadena. Ej: 'CIUDAD DE MEXICO CDMX' -> ('CIUDAD DE MEXICO', 'CDMX')"""
+        if not ubicacion_str or pd.isna(ubicacion_str):
+            return '', ''
+        
+        ubicacion = str(ubicacion_str).strip().upper()
+        
+        # Lista de estados comunes en México
+        estados = [
+            'AGUASCALIENTES', 'BAJA CALIFORNIA', 'BAJA CALIFORNIA SUR', 'CAMPECHE',
+            'CHIAPAS', 'CHIHUAHUA', 'CDMX', 'CIUDAD DE MÉXICO', 'COAHUILA',
+            'COLIMA', 'DURANGO', 'ESTADO DE MÉXICO', 'GUANAJUATO', 'GUERRERO',
+            'HIDALGO', 'JALISCO', 'MICHOACÁN', 'MORELOS', 'NAYARIT', 'NUEVO LEÓN',
+            'OAXACA', 'PUEBLA', 'QUERÉTARO', 'QUINTANA ROO', 'SAN LUIS POTOSÍ',
+            'SINALOA', 'SONORA', 'TABASCO', 'TAMAULIPAS', 'TLAXCALA', 'VERACRUZ',
+            'YUCATÁN', 'ZACATECAS'
+        ]
+        
+        # Abreviaturas comunes
+        abreviaturas = {
+            'CDMX': 'CIUDAD DE MÉXICO',
+            'DF': 'CIUDAD DE MÉXICO',
+            'EDOMEX': 'ESTADO DE MÉXICO',
+            'GTO': 'GUANAJUATO',
+            'JAL': 'JALISCO',
+            'NLE': 'NUEVO LEÓN',
+            'QRO': 'QUERÉTARO',
+            'BC': 'BAJA CALIFORNIA',
+            'BCS': 'BAJA CALIFORNIA SUR',
+            'SON': 'SONORA',
+            'CHIH': 'CHIHUAHUA',
+            'SIN': 'SINALOA',
+            'VER': 'VERACRUZ',
+            'TAB': 'TABASCO',
+            'YUC': 'YUCATÁN',
+            'QROO': 'QUINTANA ROO'
+        }
+        
+        ciudad = ubicacion
+        estado = ''
+        
+        # Buscar estados completos
+        for est in estados:
+            if est in ubicacion:
+                estado = est
+                ciudad = ubicacion.replace(est, '').strip()
+                break
+        
+        # Si no se encontró estado completo, buscar abreviaturas
+        if not estado:
+            for abrev, est in abreviaturas.items():
+                if abrev in ubicacion:
+                    estado = est
+                    ciudad = ubicacion.replace(abrev, '').strip()
+                    break
+        
+        # Limpiar ciudad (remover comas, puntos, etc.)
+        ciudad = re.sub(r'[,\.\-]+$', '', ciudad).strip()
+        
+        # Si la ciudad está vacía pero tenemos ubicación, usar toda la ubicación como ciudad
+        if not ciudad and ubicacion:
+            ciudad = ubicacion
+        
+        return ciudad, estado
 
 class DataMerger:
-    """Combina datos de diferentes fuentes - DIP"""
-    
-    def __init__(self, 
-                 ubicacion_provider: ContactInfoProvider,
-                 correo_provider: ContactInfoProvider,
-                 telefono_provider: ContactInfoProvider):
+    def __init__(self, ubicacion_provider, correo_provider, telefono_provider):
         self.ubicacion_provider = ubicacion_provider
         self.correo_provider = correo_provider
         self.telefono_provider = telefono_provider
     
     def merge_data(self, nombres: List[str]) -> List[Dict[str, str]]:
-        """Combina datos de diferentes proveedores"""
         datos_combinados = []
-        
         for nombre in nombres:
             datos_ubi = self.ubicacion_provider.get_contact_info(nombre)
             datos_correo = self.correo_provider.get_contact_info(nombre)
             datos_telefono = self.telefono_provider.get_contact_info(nombre)
             
-            # MOSTRAR EMPLEADOS QUE APAREZCAN EN UBICACIÓN + TELÉFONO O UBICACIÓN + CORREO
             tiene_ubicacion = bool(datos_ubi.get('departamento') or datos_ubi.get('puesto'))
             tiene_correo = bool(datos_correo.get('correo'))
             tiene_telefono = bool(datos_telefono.get('telefono'))
             
-            # Incluir si tiene ubicación Y al menos correo o teléfono
             if tiene_ubicacion and (tiene_correo or tiene_telefono):
+                # Extraer ciudad y estado si están disponibles
+                ubicacion_str = datos_ubi.get('ubicacion', '')
+                ciudad, estado = LocationExtractor.extract_location(ubicacion_str)
+                
                 datos_combinados.append({
                     'nombre': nombre,
                     'departamento': datos_ubi.get('departamento', ''),
                     'puesto': datos_ubi.get('puesto', ''),
+                    'ubicacion': ubicacion_str,
+                    'ciudad': ciudad,
+                    'estado': estado,
                     'correo': datos_correo.get('correo', ''),
                     'telefono': datos_telefono.get('telefono', ''),
                     'fuente_ubicacion': 'Sí' if tiene_ubicacion else 'No',
                     'fuente_correo': 'Sí' if tiene_correo else 'No',
                     'fuente_telefono': 'Sí' if tiene_telefono else 'No'
                 })
-        
         return datos_combinados
 
-# =============================================
-# IMPLEMENTACIONES CONCRETAS
-# =============================================
-
 class EmployeeDataProvider(ContactInfoProvider):
-    """Proveedor de datos de empleados desde DataFrames"""
-    
     def __init__(self, df: pd.DataFrame, nombre_column: str, data_columns: Dict[str, str]):
         self.df = df
         self.nombre_column = nombre_column
@@ -437,95 +655,71 @@ class EmployeeDataProvider(ContactInfoProvider):
         self._prepare_data()
     
     def _prepare_data(self):
-        """Prepara los datos para búsqueda eficiente"""
         if self.df is not None and not self.df.empty and self.nombre_column in self.df.columns:
             self.df[self.nombre_column] = self.df[self.nombre_column].astype(str).str.strip().str.upper()
             self.df.dropna(subset=[self.nombre_column], inplace=True)
-            self.df = self.df[self.df[self.nombre_column] != '']
-            self.df = self.df[~self.df[self.nombre_column].str.upper().isin(['NAN', 'NONE', 'NULL'])]
+            self.df = self.df[~self.df[self.nombre_column].isin(['', 'NAN', 'NONE', 'NULL'])]
     
     def get_contact_info(self, nombre: str) -> Dict[str, str]:
-        """Obtiene información de contacto para un nombre específico"""
         result = {}
-        
-        if self.df is None or self.df.empty or self.nombre_column not in self.df.columns:
-            return result
-            
+        if self.df is None or self.df.empty or self.nombre_column not in self.df.columns: return result
         row = self.df[self.df[self.nombre_column] == nombre]
-        
         if not row.empty:
             for key, column in self.data_columns.items():
-                if column and column in row.columns and not row[column].isna().all():
-                    result[key] = row[column].iloc[0] if not pd.isna(row[column].iloc[0]) else ''
-        
+                if column and column in row.columns:
+                    val = row[column].iloc[0]
+                    result[key] = val if not pd.isna(val) else ''
         return result
     
     def get_all_names(self) -> List[str]:
-        """Obtiene todos los nombres únicos"""
-        if self.df is None or self.df.empty or self.nombre_column not in self.df.columns:
-            return []
+        if self.df is None or self.df.empty: return []
         return self.df[self.nombre_column].unique().tolist()
 
 class ColumnFinder:
-    """Encuentra columnas en DataFrames - SRP"""
-    
     @staticmethod
     def find_column(df: pd.DataFrame, posibles_nombres: List[str]) -> Optional[str]:
-        """Encuentra una columna por posibles nombres"""
-        if df is None or df.empty:
-            return None
-            
+        if df is None or df.empty: return None
         for nombre in posibles_nombres:
             for col in df.columns:
-                if nombre in col:
-                    return col
+                if nombre in col: return col
         return None
 
-class PhoneCleaner:
-    """Limpia números de teléfono - SRP"""
-    
-    @staticmethod
-    def clean_phone(numero: str) -> str:
-        """Limpia número de teléfono"""
-        if pd.isna(numero) or numero == '':
-            return ''
-        
-        numero_str = str(numero)
-        numero_limpio = re.sub(r'\D', '', numero_str)
-        return numero_limpio
-
 class PositionValidator:
-    """Valida posiciones de empleados - SRP"""
-    
     @staticmethod
     def is_director(puesto: str) -> bool:
-        """Verifica si es director (excluyendo subdirector)"""
-        if pd.isna(puesto) or puesto == '':
-            return False
-        
+        if pd.isna(puesto) or puesto == '': return False
         puesto_str = str(puesto).lower().strip()
         return 'director' in puesto_str and 'subdirector' not in puesto_str
 
 class EmployeeSearcher:
-    """Realiza búsquedas de empleados - SRP"""
-    
     @staticmethod
-    def advanced_search(df: pd.DataFrame, search_term: str) -> pd.DataFrame:
-        """Búsqueda avanzada en todas las columnas"""
-        if not search_term.strip() or df.empty:
+    def advanced_search(df: pd.DataFrame, search_term: str, ciudad: str = None, estado: str = None) -> pd.DataFrame:
+        if not search_term.strip() and not ciudad and not estado:
             return pd.DataFrame()
         
-        termino = search_term.upper().strip()
-        termino_palabras = termino.split()
+        # Filtrar por término de búsqueda
+        if search_term.strip():
+            termino = search_term.upper().strip()
+            termino_palabras = termino.split()
+            def contains_words(row):
+                texto = ' '.join(str(val) for val in row.values if pd.notna(val)).upper()
+                return all(palabra in texto for palabra in termino_palabras)
+            resultados = df[df.apply(contains_words, axis=1)]
+        else:
+            resultados = df.copy()
         
-        def contains_words(row):
-            texto_busqueda = ' '.join(str(val) for val in row.values if pd.notna(val)).upper()
-            return all(palabra in texto_busqueda for palabra in termino_palabras)
+        # Filtrar por ciudad si se especifica
+        if ciudad and 'ciudad' in resultados.columns:
+            resultados = resultados[resultados['ciudad'].str.contains(ciudad.upper(), na=False)]
         
-        return df[df.apply(contains_words, axis=1)]
+        # Filtrar por estado si se especifica
+        if estado and 'estado' in resultados.columns:
+            resultados = resultados[resultados['estado'].str.contains(estado.upper(), na=False)]
+        
+        return resultados
 
 # =============================================
-# CLASE PRINCIPAL DE LA APLICACIÓN
+# 3. CLASE PRINCIPAL DE LA APLICACIÓN
 # =============================================
 
 class EmployeeContactSystem:
@@ -535,521 +729,592 @@ class EmployeeContactSystem:
         self.config = ConfigManager()
         self.file_handler = TemporaryFileHandler(self.config.TEMP_DIR)
         self.ui_manager = UIManager()
-        
-        # Inicializar estado de la sesión
         self._initialize_session_state()
     
     def _initialize_session_state(self):
-        """Inicializa el estado de la sesión"""
-        if 'datos_cargados' not in st.session_state:
-            st.session_state.datos_cargados = False
-        if 'df_combinado' not in st.session_state:
-            st.session_state.ddf_combinado = None
-        if 'info_origen' not in st.session_state:
-            st.session_state.info_origen = None
-        if 'contacto_seleccionado' not in st.session_state:
-            st.session_state.contacto_seleccionado = None
-        if 'termino_busqueda' not in st.session_state:
-            st.session_state.termino_busqueda = ""
-        if 'mostrando_resultados' not in st.session_state:
-            st.session_state.mostrando_resultados = False
+        if 'datos_cargados' not in st.session_state: st.session_state.datos_cargados = False
+        if 'df_combinado' not in st.session_state: st.session_state.df_combinado = None
+        if 'info_origen' not in st.session_state: st.session_state.info_origen = None
+        if 'contacto_seleccionado' not in st.session_state: st.session_state.contacto_seleccionado = None
+        if 'termino_busqueda' not in st.session_state: st.session_state.termino_busqueda = ""
+        if 'mostrando_resultados' not in st.session_state: st.session_state.mostrando_resultados = False
+        if 'last_contact_clicked' not in st.session_state: st.session_state.last_contact_clicked = None
+        if 'filtro_ciudad' not in st.session_state: st.session_state.filtro_ciudad = ""
+        if 'filtro_estado' not in st.session_state: st.session_state.filtro_estado = ""
+        if 'filtros_activos' not in st.session_state: st.session_state.filtros_activos = False
     
     def setup_ui(self):
-        """Configura la interfaz de usuario"""
         self.ui_manager.setup_page_config()
         self.ui_manager.apply_custom_styles()
         self.ui_manager.display_footer()
     
     def load_data_from_temporales(self) -> Tuple[Optional[pd.DataFrame], Optional[Dict]]:
-        """Carga y procesa datos desde archivos temporales"""
-        progress_bar = st.progress(0, text="📥 Cargando archivos temporales...")
-        
+        # Simulación de carga (sin progress bar bloqueante)
         try:
-            # Cargar archivos
-            progress_bar.progress(0.2, text="📁 Cargando archivo de ubicación...")
             df_ubicacion = self._load_dataframe('ubicacion', 1)
-            
-            progress_bar.progress(0.4, text="📁 Cargando archivo de correo...")
             df_correo = self._load_dataframe('correo', 0)
-            
-            progress_bar.progress(0.6, text="📁 Cargando archivo de teléfono...")
             df_telefono = self._load_dataframe('telefono', 0)
             
             if all(df is not None and not df.empty for df in [df_ubicacion, df_correo, df_telefono]):
-                df_combinado = self._process_data(df_ubicacion, df_correo, df_telefono, progress_bar)
-                
+                df_combinado = self._process_data(df_ubicacion, df_correo, df_telefono)
                 if df_combinado is not None and not df_combinado.empty:
                     info_origen = self._create_source_info()
                     return df_combinado, info_origen
-        
-            st.error("❌ No se pudieron cargar todos los archivos")
             return None, None
-            
         except Exception as e:
-            st.error(f"❌ Error al cargar datos temporales: {str(e)}")
+            st.error(f"Error al cargar datos: {str(e)}")
             return None, None
-        finally:
-            time.sleep(0.5)
-            progress_bar.empty()
     
     def _load_dataframe(self, file_type: str, header_row: int) -> Optional[pd.DataFrame]:
-        """Carga un DataFrame desde archivo temporal"""
         file_path = self.file_handler.load(file_type)
         if file_path:
-            processor = FileDataProcessor(header_row)
-            return processor.process(file_path)
+            return FileDataProcessor(header_row).process(file_path)
         return None
     
-    def _process_data(self, df_ubicacion, df_correo, df_telefono, progress_bar) -> Optional[pd.DataFrame]:
-        """Procesa y combina los datos"""
+    def _process_data(self, df_ubicacion, df_correo, df_telefono) -> Optional[pd.DataFrame]:
         try:
-            # Encontrar columnas
             col_nombre_ubi = ColumnFinder.find_column(df_ubicacion, ['nombre', 'name', 'nombres', 'empleado'])
             col_nombre_correo = ColumnFinder.find_column(df_correo, ['nombre', 'name', 'nombres', 'empleado'])
             col_nombre_telefono = ColumnFinder.find_column(df_telefono, ['nombre', 'name', 'nombres', 'empleado'])
             
-            if not col_nombre_ubi:
-                st.error("❌ No se encontró la columna de nombre en el archivo de ubicación")
-                return None
+            if not col_nombre_ubi: return None
             
-            progress_bar.progress(0.5, text="🔗 Combinando datos...")
+            # Buscar columna de ubicación (ciudad/estado)
+            col_ubicacion = ColumnFinder.find_column(df_ubicacion, [
+                'ubicacion', 'ciudad', 'estado', 'location', 'city', 'state', 'ciudad_y_estado'
+            ])
             
-            # Crear proveedores de datos
             ubicacion_provider = EmployeeDataProvider(
                 df_ubicacion, col_nombre_ubi,
                 {
                     'puesto': ColumnFinder.find_column(df_ubicacion, ['puesto', 'cargo', 'position']),
-                    'departamento': ColumnFinder.find_column(df_ubicacion, ['departamento', 'area', 'department'])
+                    'departamento': ColumnFinder.find_column(df_ubicacion, ['departamento', 'area', 'department']),
+                    'ubicacion': col_ubicacion  # Puede ser None si no existe
                 }
             )
-            
             correo_provider = EmployeeDataProvider(
                 df_correo, col_nombre_correo if col_nombre_correo else col_nombre_ubi,
                 {'correo': ColumnFinder.find_column(df_correo, ['correo', 'email', 'mail'])}
             )
-            
             telefono_provider = EmployeeDataProvider(
                 df_telefono, col_nombre_telefono if col_nombre_telefono else col_nombre_ubi,
                 {'telefono': ColumnFinder.find_column(df_telefono, ['telefono', 'tel', 'phone', 'celular'])}
             )
             
-            # Combinar datos - usar nombres de ubicación como base
             data_merger = DataMerger(ubicacion_provider, correo_provider, telefono_provider)
-            datos_combinados = data_merger.merge_data(ubicacion_provider.get_all_names())
+            datos = data_merger.merge_data(ubicacion_provider.get_all_names())
+            df_combinado = pd.DataFrame(datos)
             
-            df_combinado = pd.DataFrame(datos_combinados)
-            
-            # Filtrar directores
             if 'puesto' in df_combinado.columns:
                 df_combinado = df_combinado[~df_combinado['puesto'].apply(PositionValidator.is_director)]
             
-            progress_bar.progress(1.0, text="✅ Procesamiento completado")
-            
-            # Mostrar estadísticas de combinación
-            if not df_combinado.empty:
-                st.success(f"✅ Se combinaron {len(df_combinado)} empleados con datos completos")
-                
-                # Mostrar estadísticas de fuentes
-                if 'fuente_ubicacion' in df_combinado.columns:
-                    con_ubicacion = len(df_combinado[df_combinado['fuente_ubicacion'] == 'Sí'])
-                    con_correo = len(df_combinado[df_combinado['fuente_correo'] == 'Sí'])
-                    con_telefono = len(df_combinado[df_combinado['fuente_telefono'] == 'Sí'])
-                    
-                    st.info(f"📊 Estadísticas: {con_ubicacion} con ubicación, {con_correo} con correo, {con_telefono} con teléfono")
-            
             return df_combinado
-            
         except Exception as e:
-            st.error(f"❌ Error al procesar los datos: {str(e)}")
+            st.error(f"Error procesando datos: {str(e)}")
             return None
     
     def _create_source_info(self) -> Dict[str, str]:
-        """Crea información de origen de los datos"""
-        ubicacion_file = self.file_handler.load('ubicacion')
-        correo_file = self.file_handler.load('correo')
-        telefono_file = self.file_handler.load('telefono')
-        
+        ubicacion = self.file_handler.load('ubicacion')
         return {
-            'origen_ubicacion': f"Archivo: {os.path.basename(ubicacion_file).replace('ubicacion_', '')}" if ubicacion_file else "No disponible",
-            'origen_correo': f"Archivo: {os.path.basename(correo_file).replace('correo_', '')}" if correo_file else "No disponible",
-            'origen_telefono': f"Archivo: {os.path.basename(telefono_file).replace('telefono_', '')}" if telefono_file else "No disponible",
+            'origen_ubicacion': os.path.basename(ubicacion) if ubicacion else "N/A",
             'fecha_actualizacion': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-    
+
+    # --- MÉTODOS VISUALES PROFESIONALES ---
+
     def display_contact_card(self, contacto: Dict[str, str]):
-        """Muestra tarjeta de contacto"""
-        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        """Muestra tarjeta de contacto con diseño profesional"""
+        st.markdown(f"""
+        <div class="contact-card-detail">
+            <div class="detail-header">
+                <span style="font-size: 20px;">👤</span> {contacto['nombre']}
+            </div>
+        """, unsafe_allow_html=True)
+
+        col_info, col_actions = st.columns([2, 1])
+
+        with col_info:
+            puesto = contacto.get('puesto', 'No especificado')
+            depto = contacto.get('departamento', 'General')
+            ciudad = contacto.get('ciudad', 'No especificada')
+            estado = contacto.get('estado', 'No especificado')
+            telefono = contacto.get('telefono', 'No disponible')
+            correo = contacto.get('correo', 'No disponible')
+
+            st.markdown(f"""
+                <div class="detail-row">
+                    <span class="detail-label">Posición:</span>
+                    <span class="detail-value">{puesto}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Departamento:</span>
+                    <span class="detail-value">{depto}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ubicación:</span>
+                    <span class="detail-value">{ciudad}, {estado}</span>
+                </div>
+                <div class="divider"></div>
+                <div class="detail-row">
+                    <span class="detail-label">Teléfono:</span>
+                    <span class="detail-value">{telefono}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Correo:</span>
+                    <span class="detail-value">{correo}</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+        with col_actions:
+            st.markdown("#### Contacto")
+            self._display_action_buttons(contacto.get('telefono'), contacto.get('correo'))
         
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.markdown('<div class="contact-card">', unsafe_allow_html=True)
-            st.write(f"### 👤 {contacto['nombre']}")
-            
-            info_cols = st.columns(2)
-            with info_cols[0]:
-                if contacto.get('puesto'):
-                    st.write(f"**💼 Puesto:** {contacto['puesto']}")
-                if contacto.get('departamento'):
-                    st.write(f"**🏢 Departamento:** {contacto['departamento']}")
-            
-            with info_cols[1]:
-                telefono = contacto.get('telefono', '')
-                correo = contacto.get('correo', '')
-                
-                if telefono:
-                    st.write(f"**📞 Teléfono:** {telefono}")
-                else:
-                    st.warning("**📞 Teléfono:** No disponible")
-                
-                if correo:
-                    st.write(f"**📧 Correo:** {correo}")
-                else:
-                    st.warning("**📧 Correo:** No disponible")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            st.write("### 📱 Acciones Rápidas")
-            self._display_action_buttons(telefono, correo)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
     def _display_action_buttons(self, telefono: str, correo: str):
-        """Muestra botones de acción"""
-        # Botón WhatsApp
         whatsapp_generator = WhatsAppURLGenerator()
         url_whatsapp = whatsapp_generator.generate_url(telefono) if telefono else None
         
-        if url_whatsapp:
-            st.markdown(
-                f'<a href="{url_whatsapp}" target="_blank" style="text-decoration: none;">'
-                f'<button class="action-btn whatsapp-btn">📱 Abrir WhatsApp</button>'
-                f'</a>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.button("📱 WhatsApp", disabled=True, use_container_width=True, 
-                     help="No hay número de teléfono válido")
-        
-        # Botón Correo
         email_generator = EmailURLGenerator()
         url_correo = email_generator.generate_url(correo) if correo else None
-        
-        if url_correo:
-            st.markdown(
-                f'<a href="{url_correo}" target="_blank" style="text-decoration: none;">'
-                f'<button class="action-btn email-btn">📧 Enviar Correo</button>'
-                f'</a>',
-                unsafe_allow_html=True
-            )
+
+        if url_whatsapp:
+            st.markdown(f'<a href="{url_whatsapp}" target="_blank" class="action-btn whatsapp-btn">WhatsApp</a>', unsafe_allow_html=True)
         else:
-            st.button("📧 Correo", disabled=True, use_container_width=True, 
-                     help="No hay correo electrónico")
-    
-    def show_admin_section(self) -> bool:
+            st.button("WhatsApp", disabled=True, key="btn_wa_dis", use_container_width=True)
+
+        if url_correo:
+            st.markdown(f'<a href="{url_correo}" target="_blank" class="action-btn email-btn">Enviar Correo</a>', unsafe_allow_html=True)
+        else:
+            st.button("Correo", disabled=True, key="btn_em_dis", use_container_width=True)
+
+    def show_search_interface(self, df: pd.DataFrame):
+        # Mostrar filtros activos si existen
+        self._show_active_filters()
+        
+        # Panel de búsqueda y filtros
+        col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+        
+        with col1:
+            def update_search():
+                st.session_state.termino_busqueda = st.session_state.busqueda_input_value
+                st.session_state.contacto_seleccionado = None
+                st.session_state.mostrando_resultados = True
+                st.session_state.filtros_activos = bool(
+                    st.session_state.busqueda_input_value.strip() or 
+                    st.session_state.ciudad_input_value or 
+                    st.session_state.estado_input_value
+                )
+            
+            st.text_input(
+                "Buscar colaborador",
+                placeholder="Nombre, posición o departamento...",
+                key="busqueda_input_value",
+                value=st.session_state.termino_busqueda,
+                on_change=update_search
+            )
+        
+        with col2:
+            def update_ciudad():
+                st.session_state.filtro_ciudad = st.session_state.ciudad_input_value
+                st.session_state.contacto_seleccionado = None
+                st.session_state.mostrando_resultados = True
+                st.session_state.filtros_activos = True
+            
+            st.text_input(
+                "Ciudad",
+                placeholder="Filtrar por ciudad...",
+                key="ciudad_input_value",
+                value=st.session_state.filtro_ciudad,
+                on_change=update_ciudad
+            )
+        
+        with col3:
+            def update_estado():
+                st.session_state.filtro_estado = st.session_state.estado_input_value
+                st.session_state.contacto_seleccionado = None
+                st.session_state.mostrando_resultados = True
+                st.session_state.filtros_activos = True
+            
+            st.text_input(
+                "Estado",
+                placeholder="Filtrar por estado...",
+                key="estado_input_value",
+                value=st.session_state.filtro_estado,
+                on_change=update_estado
+            )
+        
+        with col4:
+            st.write("")
+            st.write("")
+            if st.button("Limpiar filtros", use_container_width=True, key="clear_filters"):
+                st.session_state.termino_busqueda = ""
+                st.session_state.filtro_ciudad = ""
+                st.session_state.filtro_estado = ""
+                st.session_state.contacto_seleccionado = None
+                st.session_state.mostrando_resultados = False
+                st.session_state.filtros_activos = False
+                st.rerun()
+
+        # Mostrar contacto seleccionado si existe
+        if st.session_state.contacto_seleccionado is not None:
+            self.display_contact_card(st.session_state.contacto_seleccionado)
+            st.markdown("---")
+
+        if not st.session_state.mostrando_resultados and not st.session_state.filtros_activos:
+            # Mostrar estadísticas generales
+            self._show_dashboard_stats(df)
+            return
+
+        # Realizar búsqueda con filtros
+        if st.session_state.filtros_activos:
+            resultados = EmployeeSearcher.advanced_search(
+                df, 
+                st.session_state.termino_busqueda,
+                st.session_state.filtro_ciudad,
+                st.session_state.filtro_estado
+            )
+            
+            if len(resultados) > 0:
+                if st.session_state.contacto_seleccionado is None:
+                    st.markdown(f"**Resultados encontrados:** {len(resultados)} colaboradores")
+                
+                self._display_employee_table(resultados)
+                
+                st.markdown("---")
+                self._export_results(resultados)
+            else:
+                st.warning("No se encontraron resultados con los filtros aplicados.")
+
+    def _show_active_filters(self):
+        """Muestra los filtros activos actualmente"""
+        filters = []
+        if st.session_state.termino_busqueda:
+            filters.append(f"Texto: '{st.session_state.termino_busqueda}'")
+        if st.session_state.filtro_ciudad:
+            filters.append(f"Ciudad: '{st.session_state.filtro_ciudad}'")
+        if st.session_state.filtro_estado:
+            filters.append(f"Estado: '{st.session_state.filtro_estado}'")
+        
+        if filters:
+            st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+            st.markdown("**Filtros aplicados:**")
+            for filtro in filters:
+                st.markdown(f'<span class="filter-badge">{filtro}</span>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    def _show_dashboard_stats(self, df: pd.DataFrame):
+        """Muestra estadísticas generales del directorio"""
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total de colaboradores", len(df))
+        
+        with col2:
+            if 'ciudad' in df.columns:
+                ciudades_unicas = df['ciudad'].nunique()
+                st.metric("Ciudades distintas", ciudades_unicas)
+        
+        with col3:
+            if 'estado' in df.columns:
+                estados_unicos = df['estado'].nunique()
+                st.metric("Estados distintos", estados_unicos)
+        
+        with col4:
+            if 'departamento' in df.columns:
+                deptos_unicos = df['departamento'].nunique()
+                st.metric("Departamentos", deptos_unicos)
+        
+        # Mostrar distribuciones
+        if 'estado' in df.columns and not df['estado'].empty:
+            st.markdown("---")
+            st.subheader("Distribución por Estado")
+            estado_counts = df['estado'].value_counts().head(15)
+            st.bar_chart(estado_counts)
+        
+        if 'ciudad' in df.columns and not df['ciudad'].empty:
+            st.markdown("---")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Top 10 Ciudades")
+                ciudad_counts = df['ciudad'].value_counts().head(10)
+                st.dataframe(ciudad_counts, use_container_width=True)
+            
+            with col2:
+                st.subheader("Top 10 Departamentos")
+                if 'departamento' in df.columns:
+                    depto_counts = df['departamento'].value_counts().head(10)
+                    st.dataframe(depto_counts, use_container_width=True)
+
+    def _generate_unique_key(self, contacto: Dict[str, str], idx: int) -> str:
+        """Genera una clave única para el botón"""
+        try:
+            contacto_str = f"{contacto.get('nombre', '')}_{contacto.get('puesto', '')}_{contacto.get('departamento', '')}"
+            hash_obj = hashlib.md5(contacto_str.encode())
+            hash_hex = hash_obj.hexdigest()[:8]
+            return f"select_btn_{idx}_{hash_hex}"
+        except:
+            return f"select_btn_{idx}_{int(time.time() * 1000)}"
+
+    def _display_employee_table(self, resultados: pd.DataFrame):
+        """Muestra la tabla de empleados con ubicación"""
+        st.markdown("""
+            <div style="display: flex; padding: 12px 20px; background: #f1f5f9; border-radius: 8px 8px 0 0; font-weight: 500; color: #475569; font-size: 13px;">
+                <div style="flex: 2;">Colaborador</div>
+                <div style="flex: 2;">Posición</div>
+                <div style="flex: 1;">Departamento</div>
+                <div style="flex: 1;">Ubicación</div>
+                <div style="flex: 1; text-align: center;">Acción</div>
+            </div>
+            <div class="employee-list-container">
+        """, unsafe_allow_html=True)
+
+        for idx, (_, row) in enumerate(resultados.iterrows()):
+            contacto = row.to_dict()
+            col1, col2, col3, col4, col5 = st.columns([2, 2, 1, 1, 1])
+            
+            with col1:
+                st.markdown(f"<div style='padding: 10px 0;'><span class='emp-name'>{contacto['nombre']}</span></div>", unsafe_allow_html=True)
+            with col2:
+                puesto_safe = contacto.get('puesto', '') or '-'
+                st.markdown(f"<div style='padding: 10px 0;'><span class='emp-role'>{puesto_safe}</span></div>", unsafe_allow_html=True)
+            with col3:
+                depto_safe = contacto.get('departamento', '') or '-'
+                st.markdown(f"<div style='padding: 10px 0;'><span class='emp-dept'>{depto_safe}</span></div>", unsafe_allow_html=True)
+            with col4:
+                ciudad = contacto.get('ciudad', '') or '-'
+                estado = contacto.get('estado', '') or ''
+                ubicacion_text = f"{ciudad}"
+                if estado and estado != '-':
+                    ubicacion_text += f", {estado}"
+                st.markdown(f"<div style='padding: 10px 0;'><span class='emp-location'>{ubicacion_text}</span></div>", unsafe_allow_html=True)
+            with col5:
+                button_key = self._generate_unique_key(contacto, idx)
+                if st.button("Ver detalles", key=button_key, use_container_width=True):
+                    st.session_state.contacto_seleccionado = contacto
+                    st.rerun()
+
+            st.markdown("<div style='border-bottom: 1px solid #f1f5f9;'></div>", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    def _export_results(self, resultados: pd.DataFrame):
+        """Exporta resultados excluyendo columnas de fuente"""
+        if not resultados.empty:
+            # Columnas a excluir del reporte
+            columnas_a_excluir = ['fuente_ubicacion', 'fuente_correo', 'fuente_telefono']
+            columnas_disponibles = [col for col in resultados.columns if col not in columnas_a_excluir]
+            
+            # Filtrar solo las columnas deseadas
+            datos_exportar = resultados[columnas_disponibles].copy()
+            
+            # Renombrar columnas para mejor presentación
+            nombre_columnas = {
+                'nombre': 'Nombre',
+                'puesto': 'Posición',
+                'departamento': 'Departamento',
+                'ciudad': 'Ciudad',
+                'estado': 'Estado',
+                'correo': 'Correo Electrónico',
+                'telefono': 'Teléfono'
+            }
+            
+            # Renombrar solo las columnas que existan
+            datos_exportar = datos_exportar.rename(columns={
+                k: v for k, v in nombre_columnas.items() 
+                if k in datos_exportar.columns
+            })
+            
+            csv_data = datos_exportar.to_csv(index=False, encoding='utf-8-sig')
+            
+            st.download_button(
+                label="Descargar reporte (CSV)",
+                data=csv_data,
+                file_name=f"directorio_empleados_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    def show_admin_section(self):
         """Muestra la sección de administrador"""
         if 'password_admin_verified' not in st.session_state:
             st.session_state.password_admin_verified = False
         
         if not st.session_state.password_admin_verified:
-            return self._show_admin_login()
-        
-        return self._show_admin_panel()
-    
-    def _show_admin_login(self) -> bool:
-        """Muestra formulario de login de administrador"""
-        st.write("### 👨‍💼 Panel de Administrador")
-        with st.form("admin_login"):
-            password = st.text_input("Contraseña:", type="password", key="admin_password")
-            if st.form_submit_button("🔓 Acceder", use_container_width=True):
-                if password == self.config.PASSWORD:
-                    st.session_state.password_admin_verified = True
-                    st.experimental_experimental_rerun()
-                else:
-                    st.error("❌ Contraseña incorrecta")
-        return False
-    
-    def _show_admin_panel(self) -> bool:
-        """Muestra panel de administrador"""
-        # Header de administrador
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.success("🔓 Sesión de administrador activa")
-        with col2:
-            if st.button("🚪 Cerrar Sesión", use_container_width=True, key="logout_admin"):
-                st.session_state.password_admin_verified = False
-                st.experimental_rerun()
-        
-        # Carga de archivos
-        with st.expander("📁 Gestión de Archivos", expanded=True):
-            self._show_file_upload_section()
-        
-        # Botones de acción
-        self._show_admin_actions()
-        
-        # Información del sistema
-        if st.session_state.get('info_origen'):
-            self._show_system_info()
-        
-        return True
-    
-    def _show_file_upload_section(self):
-        """Muestra sección de carga de archivos"""
-        st.info("💡 Sube los tres archivos necesarios para actualizar los datos (Excel o CSV)")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            archivo_ubicacion = st.file_uploader(
-                "📋 Ubicación (Excel/CSV)",
-                type=['xlsx', 'xls', 'csv'],
-                key="admin_ubicacion",
-                help="Encabezados en fila 2: Nombre, Puesto, Departamento"
-            )
-            if archivo_ubicacion:
-                self.file_handler.save(archivo_ubicacion, 'ubicacion')
-                st.success(f"✅ {archivo_ubicacion.name}")
-        
-        with col2:
-            archivo_correo = st.file_uploader(
-                "📧 Correos (Excel/CSV)",
-                type=['xlsx', 'xls', 'csv'],
-                key="admin_correo",
-                help="Encabezados en fila 1: Nombre, Correo"
-            )
-            if archivo_correo:
-                self.file_handler.save(archivo_correo, 'correo')
-                st.success(f"✅ {archivo_correo.name}")
-                
-        with col3:
-            archivo_telefono = st.file_uploader(
-                "📞 Teléfonos (Excel/CSV)",
-                type=['xlsx', 'xls', 'csv'],
-                key="admin_telefono",
-                help="Encabezados en fila 1: Nombre, Teléfono"
-            )
-            if archivo_telefono:
-                self.file_handler.save(archivo_telefono, 'telefono')
-                st.success(f"✅ {archivo_telefono.name}")
-    
-    def _show_admin_actions(self):
-        """Muestra botones de acción del administrador"""
-        archivos_listos = self.file_handler.exists(['ubicacion', 'correo', 'telefono'])
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("🔄 Actualizar Datos", type="primary", use_container_width=True, 
-                        disabled=not archivos_listos, key="process_admin"):
-                self._update_data()
-        
-        with col2:
-            if st.button("🔄 Limpiar Cache", use_container_width=True, key="clear_cache"):
-                st.cache_data.clear()
-                st.success("✅ Cache limpiado")
-        
-        with col3:
-            if st.button("🗑️ Limpiar Todo", use_container_width=True, key="clear_all"):
-                self._cleanup_system()
-    
-    def _update_data(self):
-        """Actualiza los datos del sistema"""
-        with st.spinner("Procesando archivos..."):
-            df_combinado, info_origen = self.load_data_from_temporales()
-            
-        if df_combinado is not None and not df_combinado.empty:
-            st.session_state.df_combinado = df_combinado
-            st.session_state.info_origen = info_origen
-            st.session_state.datos_cargados = True
-            st.success(f"✅ Datos actualizados - {len(df_combinado)} empleados cargados")
-            st.experimental_rerun()
+            with st.form("admin_login"):
+                st.markdown("### Acceso Administrativo")
+                password = st.text_input("Credenciales de acceso:", type="password")
+                if st.form_submit_button("Autenticar"):
+                    if password == self.config.PASSWORD:
+                        st.session_state.password_admin_verified = True
+                        st.rerun()
+                    else:
+                        st.error("Credenciales inválidas")
         else:
-            st.error("❌ No se pudieron procesar los archivos")
-    
-    def _cleanup_system(self):
-        """Limpia todo el sistema"""
-        self.file_handler.cleanup()
-        st.cache_data.clear()
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.success("✅ Sistema limpiado completamente")
-        st.experimental_rerun()
-    
-    def _show_system_info(self):
-        """Muestra información del sistema"""
-        with st.expander("📊 Información del Sistema", expanded=False):
-            info = st.session_state.info_origen
-            st.write(f"**📋 Ubicación:** {info['origen_ubicacion']}")
-            st.write(f"**📧 Correo:** {info['origen_correo']}")
-            st.write(f"**📞 Teléfono:** {info['origen_telefono']}")
-            st.write(f"**🕐 Actualización:** {info['fecha_actualizacion']}")
-            
-            if st.session_state.get('df_combinado') is not None:
-                st.write(f"**👥 Empleados cargados:** {len(st.session_state.df_combinado)}")
-    
-    def show_search_interface(self, df: pd.DataFrame):
-        """Muestra la interfaz de búsqueda"""
-        # Búsqueda
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            def update_search():
-                st.session_state.termino_busqueda = st.session_state.busqueda_input_value
-                st.session_state.contacto_seleccionado = None
-                st.session_state.mostrando_resultados = bool(st.session_state.busqueda_input_value.strip())
-            
-            termino_busqueda = st.text_input(
-                "🔎 Buscar empleado por nombre, puesto o departamento",
-                placeholder="Ej: JUAN PEREZ o VENTAS o GERENTE",
-                key="busqueda_input_value",
-                value=st.session_state.termino_busqueda,
-                on_change=update_search
-            )
-        with col2:
-            st.write("")
-            st.write("")
-            if st.button("🔄 Limpiar Búsqueda", use_container_width=True, key="clear_search"):
-                st.session_state.termino_busqueda = ""
-                st.session_state.contacto_seleccionado = None
-                st.session_state.mostrando_resultados = False
-                st.experimental_rerun()
-        
-        # Mostrar solo campo de búsqueda limpio al inicio
-        if not st.session_state.mostrando_resultados and not st.session_state.termino_busqueda:
-            # Solo muestra el campo de búsqueda, nada más
-            return
-        
-        # Procesar búsqueda
-        if st.session_state.termino_busqueda:
-            resultados = EmployeeSearcher.advanced_search(df, st.session_state.termino_busqueda)
-            
-            if len(resultados) > 0:
-                # Mostrar contacto seleccionado si existe
-                if st.session_state.contacto_seleccionado is not None:
-                    st.write("---")
-                    self.display_contact_card(st.session_state.contacto_seleccionado)
-                    st.write("---")
-                
-                # Mostrar resultados de búsqueda
-                st.success(f"📊 {len(resultados)} empleado(s) encontrado(s) para: '{st.session_state.termino_busqueda}'")
-                
-                st.write("### Lista de Empleados")
-                st.info("💡 Haz clic en 'Seleccionar' para ver los detalles de contacto completos")
-                
-                st.markdown('<div class="employee-list-container">', unsafe_allow_html=True)
-                self._display_employee_table(resultados)
-                st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Exportar resultados
-                st.write("---")
-                self._export_results(resultados)
-            else:
-                st.warning(f"❌ No se encontraron empleados para: '{st.session_state.termino_busqueda}'")
-                st.info("💡 Prueba con otros términos de búsqueda o verifica la ortografía")
-    
-    def _display_employee_table(self, resultados: pd.DataFrame):
-        """Muestra la tabla de empleados"""
-        for idx, (_, row) in enumerate(resultados.iterrows()):
-            contacto = row.to_dict()
-            
-            col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
-            
-            with col1:
-                st.write(f"**{contacto['nombre']}**")
+            col1, col2 = st.columns([3, 1])
+            with col1: 
+                st.markdown("### Panel de Administración")
+                st.caption("Modo administrativo activo")
             with col2:
-                if contacto.get('puesto'):
-                    st.write(f"_{contacto['puesto']}_")
-                else:
-                    st.write("_Sin puesto_")
-            with col3:
-                if contacto.get('departamento'):
-                    st.write(f"`{contacto['departamento']}`")
-                else:
-                    st.write("`Sin departamento`")
-            with col4:
-                if st.button("Seleccionar", key=f"select_{idx}", use_container_width=True):
-                    st.session_state.contacto_seleccionado = contacto
-                    st.experimental_rerun()
-            
-            if idx < len(resultados) - 1:
-                st.markdown("---")
-    
-    def _export_results(self, resultados: pd.DataFrame):
-        """Exporta resultados a CSV"""
-        csv_data = resultados.to_csv(index=False, encoding='utf-8-sig')
-        st.download_button(
-            label="📥 Exportar Resultados (CSV)",
-            data=csv_data,
-            file_name=f"empleados_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="export_results",
-            use_container_width=True
-        )
-    
-    def show_sidebar(self):
-        """Muestra la barra lateral"""
-        with st.sidebar:
-            st.markdown("### 📊 Estado del Sistema")
-            if st.session_state.datos_cargados and st.session_state.df_combinado is not None:
-                st.success(f"✅ {len(st.session_state.df_combinado)} empleados")
-                if st.session_state.info_origen:
-                    st.caption(f"Última actualización: {st.session_state.info_origen['fecha_actualizacion']}")
-            elif self.file_handler.exists(['ubicacion', 'correo', 'telefono']):
-                st.warning("⚠️ Archivos listos")
-            else:
-                st.info("📝 Sin archivos")
+                if st.button("Cerrar sesión", key="logout"):
+                    st.session_state.password_admin_verified = False
+                    st.rerun()
             
             st.markdown("---")
-            st.markdown("### 💡 Uso Rápido")
-            st.markdown("""
-            1. **Buscar**: Escribe nombre, puesto o departamento
-            2. **Seleccionar**: Haz clic en 'Seleccionar' de cualquier empleado
-            3. **Contactar**: Usa WhatsApp o Correo desde la tarjeta
-            4. **Limpiar**: Botón 'Limpiar Búsqueda' para empezar de nuevo
+            st.markdown("#### Actualización de Datos")
+            st.caption("Suba los archivos requeridos para actualizar la base de datos del directorio.")
+            st.caption("**Nota:** El archivo de ubicación debe contener información de ciudad y estado.")
+            
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                u = st.file_uploader("Estructura organizacional", type=['xlsx','csv'], key="ubicacion_upload")
+                if u: 
+                    self.file_handler.save(u, 'ubicacion')
+                    st.caption(f"Archivo cargado: {u.name}")
+            with c2:
+                c = st.file_uploader("Directorio de correos", type=['xlsx','csv'], key="correo_upload")
+                if c: 
+                    self.file_handler.save(c, 'correo')
+                    st.caption(f"Archivo cargado: {c.name}")
+            with c3:
+                t = st.file_uploader("Contactos telefónicos", type=['xlsx','csv'], key="telefono_upload")
+                if t: 
+                    self.file_handler.save(t, 'telefono')
+                    st.caption(f"Archivo cargado: {t.name}")
+            
+            st.markdown("---")
+            
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("Procesar y actualizar datos", type="primary", use_container_width=True):
+                    if self.file_handler.exists(['ubicacion', 'correo', 'telefono']):
+                        with st.spinner("Procesando información..."):
+                            df, info = self.load_data_from_temporales()
+                            if df is not None:
+                                st.session_state.df_combinado = df
+                                st.session_state.info_origen = info
+                                st.session_state.datos_cargados = True
+                                st.session_state.contacto_seleccionado = None
+                                st.session_state.termino_busqueda = ""
+                                st.session_state.filtro_ciudad = ""
+                                st.session_state.filtro_estado = ""
+                                st.session_state.filtros_activos = False
+                                st.success("Base de datos actualizada correctamente.")
+                                time.sleep(1)
+                                st.rerun()
+                    else:
+                        st.error("Se requieren los tres archivos para continuar.")
+            
+            with col_btn2:
+                if st.button("Limpiar sistema", use_container_width=True):
+                    self.file_handler.cleanup()
+                    st.cache_data.clear()
+                    for key in list(st.session_state.keys()): 
+                        if key != 'datos_cargados':
+                            del st.session_state[key]
+                    st.session_state.datos_cargados = False
+                    st.success("Sistema reiniciado")
+                    st.rerun()
+
+    def show_sidebar(self):
+        with st.sidebar:
+            st.markdown("### Estado del Sistema")
+            
+            if st.session_state.datos_cargados:
+                st.markdown('<span class="status-badge status-online">Operativo</span>', unsafe_allow_html=True)
+                if st.session_state.info_origen:
+                    st.caption(f"**Última actualización:**")
+                    st.caption(f"{st.session_state.info_origen['fecha_actualizacion']}")
+            else:
+                st.markdown('<span class="status-badge status-offline">Sin datos</span>', unsafe_allow_html=True)
+            
+            st.markdown("---")
+            st.markdown("#### Información")
+            st.caption("""
+            Este sistema permite la búsqueda y gestión de contactos corporativos.
+            
+            **Funcionalidades:**
+            • Búsqueda por nombre, posición o departamento
+            • Filtro por ciudad y estado
+            • Contacto directo vía WhatsApp o correo
+            • Exportación de resultados
+            • Gestión administrativa de datos
             """)
-    
+            
+            # Si hay datos, mostrar estadísticas rápidas
+            if st.session_state.datos_cargados and st.session_state.df_combinado is not None:
+                df = st.session_state.df_combinado
+                st.markdown("---")
+                st.markdown("#### Estadísticas")
+                st.caption(f"**Colaboradores:** {len(df)}")
+                
+                if 'ciudad' in df.columns:
+                    ciudades = df['ciudad'].nunique()
+                    st.caption(f"**Ciudades:** {ciudades}")
+                
+                if 'estado' in df.columns:
+                    estados = df['estado'].nunique()
+                    st.caption(f"**Estados:** {estados}")
+            
+            st.markdown("---")
+            st.caption("Versión 2.0 | Para uso interno")
+            
+            # Información de acceso
+            st.markdown("---")
+            st.markdown("#### Acceso Remoto")
+            st.code("http://10.10.10.15:8501/directorio")
+
     def run(self):
-        """Ejecuta la aplicación principal"""
-        # Configuración inicial
         self.setup_ui()
+        self.ui_manager.display_header()
         
-        # CARGA AUTOMÁTICA AL INICIO
+        # Carga automática al inicio
         if not st.session_state.datos_cargados and self.file_handler.exists(['ubicacion', 'correo', 'telefono']):
-            with st.spinner("🔄 Cargando datos del sistema..."):
+            with st.spinner("Inicializando sistema..."):
                 df_combinado, info_origen = self.load_data_from_temporales()
                 if df_combinado is not None and not df_combinado.empty:
                     st.session_state.df_combinado = df_combinado
                     st.session_state.info_origen = info_origen
                     st.session_state.datos_cargados = True
         
-        # Interfaz principal
-        st.title("🔍 Sistema de Ubicación de Empleados-GNI")
-        
-        # Estado del sistema
-        if self.file_handler.exists(['ubicacion', 'correo', 'telefono']) and not st.session_state.datos_cargados:
-            st.warning("⚠️ Archivos encontrados pero hubo un error al procesarlos")
-        elif not self.file_handler.exists(['ubicacion', 'correo', 'telefono']):
-            st.info("📝 Use el panel de administrador para cargar archivos iniciales")
-        
-        # Mostrar interfaz de búsqueda si los datos están cargados
-        if st.session_state.datos_cargados and st.session_state.df_combinado is not None and not st.session_state.df_combinado.empty:
+        # Interfaz Principal
+        if st.session_state.datos_cargados:
             self.show_search_interface(st.session_state.df_combinado)
+        else:
+            col1, col2, col3 = st.columns([1,2,1])
+            with col2:
+                st.markdown("""
+                <div style="text-align: center; padding: 3rem 0;">
+                    <div style="font-size: 1.2rem; color: #475569; margin-bottom: 1rem;">
+                        Bienvenido al Sistema de Directorio Corporativo
+                    </div>
+                    <div style="color: #64748b; font-size: 0.95rem;">
+                        El sistema requiere una carga inicial de datos por parte del administrador.
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 8px;">
+                        <div style="font-size: 0.9rem; color: #475569; margin-bottom: 0.5rem;">
+                            <strong>URL de acceso:</strong>
+                        </div>
+                        <div style="font-family: monospace; background: white; padding: 0.5rem; border-radius: 4px; border: 1px solid #e2e8f0;">
+                            http://10.10.10.15:8501/directorio
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         
-        # Panel de administrador
-        st.markdown("---")
-        with st.expander("🔧 Administrar Archivos (Solo para actualizaciones)", expanded=False):
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # Panel Admin
+        with st.expander("Administración del Sistema"):
             self.show_admin_section()
         
-        # Barra lateral
         self.show_sidebar()
+        self.ui_manager.display_footer()
 
 # =============================================
 # EJECUCIÓN PRINCIPAL
 # =============================================
 
-def main():
-    """Función principal de la aplicación"""
-    system = EmployeeContactSystem()
-    system.run()
-
 if __name__ == "__main__":
-    main()
+    app = EmployeeContactSystem()
+    app.run()
